@@ -15,14 +15,18 @@ class ProductController extends Controller
     public function index()
     {
         $products = Redis::get('products');
-        dd($products);
+
+        $products = json_decode($products, false);
+
         if (!$products) {
             $products = Product::all();
             Redis::set('products', $products);
             Redis::expire('products', 60);
         }
 
-        return view('redis');
+        // dd($products);
+
+        return view('redis', compact('products'));
     }
 
     /**
