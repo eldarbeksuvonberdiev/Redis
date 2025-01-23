@@ -12,21 +12,25 @@ class ProductController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $products = Redis::get('products');
+        $currentPage = $request->get('page', 1);
+        $perPage = 5;
+        $cacheKey = "products_page_{$currentPage}_{$perPage}";
 
-        $products = json_decode($products, false);
+        $products = Redis::get($cacheKey);
 
         if (!$products) {
-            $products = Product::all();
-            Redis::set('products', $products);
-            Redis::expire('products', 60);
+            $products = Product::paginate($perPage);
+            // dd($products, 'if');
+            Redis::set($cacheKey, serialize($products));
+            Redis::expire($cacheKey, 60);
+        } else {
+            $products = unserialize($products);
+            // dd($products, 'else');
         }
 
-        // dd($products);
-
-        return view('redis', compact('products'));
+        return view('index', compact('products'));
     }
 
     /**
@@ -34,7 +38,7 @@ class ProductController extends Controller
      */
     public function create()
     {
-        //
+        return view('create');
     }
 
     /**
@@ -42,7 +46,15 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        $category = Product::create($request->only('name'));
+
+        Redis::flushAll();
+
+        return redirect()->route('product.index');
     }
 
     /**
@@ -58,15 +70,24 @@ class ProductController extends Controller
      */
     public function edit(Product $product)
     {
-        //
+        return view('edit', ['product' => $product]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Product $product)
+    public function update(Request $request, $id)
     {
-        //
+        $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        $category = Product::findOrFail($id);
+        $category->update($request->only('name'));
+
+        Redis::flushAll();
+
+        return redirect()->route('product.index');
     }
 
     /**
@@ -74,6 +95,10 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
-        //
+        $product->delete();
+
+        Redis::flushAll();
+
+        return redirect()->route('categories.index');
     }
 }

@@ -14,6 +14,7 @@
     <div class="container">
         <div class="row">
             <div class="col-12 mt-4">
+                <a href="{{ route('product.create') }}" class="btn btn-primary">Create</a>
                 <table class="table table-striped table-bordered table-hover mt-4">
                     <thead>
                         <tr>
@@ -29,7 +30,7 @@
                                 <td>{{ $product->id }}</td>
                                 <td>{{ $product->name }}</td>
                                 <td>
-                                    <a href=""></a>
+                                    <a href="{{ route('product.edit', $product->id) }}" class="btn btn-warning">Edit</a>
                                 </td>
                                 <td>
                                     <form action="" method="post">
@@ -40,6 +41,7 @@
                         @endforeach
                     </tbody>
                 </table>
+                {{ $products->links() }}
             </div>
         </div>
     </div>
