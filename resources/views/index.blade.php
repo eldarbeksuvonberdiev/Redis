@@ -33,7 +33,9 @@
                                     <a href="{{ route('product.edit', $product->id) }}" class="btn btn-warning">Edit</a>
                                 </td>
                                 <td>
-                                    <form action="" method="post">
+                                    <form action="{{ route('product', $product->id) }}" method="post">
+                                        @csrf
+                                        @method('DELETE')
                                         <input type="submit" class="btn btn-danger  " value="Delete">
                                     </form>
                                 </td>
